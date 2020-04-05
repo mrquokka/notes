@@ -1,17 +1,27 @@
 <template>
   <div class="note_item">
     <div
-      :class="collapse_icon"
+      class="note_collapse_icon"
       v-on:click="handler_clicked_on_collapse"
     >
-      >
+      <template v-if="note_data.collapsed"> &#128193; </template>
+      <template v-else>	&#128194;</template>
     </div>
-    <div class="note_clickable_zone" v-on:click="open_note">
-      <div class="note_label"> {{note_data.name}} </div>
+    <div class="note_clickable_zone">
+      <div class="note_label">
+        {{note_data.name}}
+      </div>
+      <div class="edit_note" v-on:click="open_note"> &#10000; </div>
+      <div
+        v-on:click="handler_remove_note"
+        class="remove_icon"
+      >
+        &#128465;
+      </div>
     </div>
     <div class="note_todos_container" :style="style_for_todos">
       <todos
-        :note_data="$store.state.notes[id]"
+        :todos="$store.state.notes[id].todos"
         :disabled="true"
         :limit="limit"
       />
@@ -38,11 +48,16 @@
     },
     methods: {
       open_note: function() {
-        this.$router.push({name: 'note', params: { id: this.id }});
+        this.$router.push({name: 'open_note', params: { id: this.id }});
       },
 
       handler_clicked_on_collapse: function () {
         this.$store.commit('collapse_clicked', {id: this.id})
+      },
+
+      handler_remove_note: function (event) {
+        this.$emit('need_remove_note', event);
+        return event.stopPropagation();
       }
 
     },
@@ -51,22 +66,14 @@
         return this.$store.state.notes[this.id]
       },
 
-      collapse_icon: function () {
-        const result = ['note_collapse_icon']
-        if (!this.note_data.collapsed) {
-          result.push('is_open');
-        }
-        return result.join(' ')
-      },
-
       style_for_todos: function() {
         var opacity, height;
         if (this.note_data.collapsed) {
-          opacity = 0
-          height = '0px'
+          opacity = 0;
+          height = '0px';
         } else {
-          opacity = 1
-          height = 'unset'
+          opacity = 1;
+          height = 'unset';
         }
         return {
           opacity,
@@ -81,47 +88,59 @@
   @import './../css/variables.scss';
 
   $transition_for_collapse_icon: transform .3s ease-in-out;
-  $transition_for_note_clickable_zone: opacity .3s ease-in-out width .3s ease-in-out;
-  $gap_with_icon: $icon_size + $items_gap;
+  $transition_for_note_clickable_zone: opacity .3s ease-in-out,
+    width .3s ease-in-out;
+  $gap_with_icon: 26px;
 
   .note_item {
-    padding: 5px 10px;
+    padding: 0px 10px;
     clear: both;
   }
 
-  .note_label {
-    float: left;
-  }
-
   .note_collapse_icon {
+    font-size: 17px;
     float: left;
-    width: $icon_size;
-    height: $icon_size;
-    line-height: $icon_size;
-    font-size: 40px;
-    margin-right: $items_gap;
-    color: $color_of_icons;
-    cursor: pointer;
-    transform: unset;
-    -webkit-transition: $transition_for_collapse_icon;
-    -moz-transition:    $transition_for_collapse_icon;
-    -o-transition:      $transition_for_collapse_icon;
-    -ms-transition:     $transition_for_collapse_icon;
-    transition:         $transition_for_collapse_icon;
+    padding-right: 6px;
   }
 
-  .note_collapse_icon.is_open {
-    transform: rotate(90deg);
+  .note_clickable_zone, .note_collapse_icon {
+    cursor: pointer;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .note_clickable_zone {
-    width: calc(100% - #{$gap_with_icon});
+    width: calc(100% - 28px);
     float: left;
     min-height: $icon_size;
+    // padding-bottom: 5px;
+  }
+
+  .note_label, .edit_note, .remove_icon {
+    float: left;
+  }
+
+  .note_label {
+    min-width: $icon_size;
+    min-height: $icon_size;
+    padding-right: 5px;
+    line-height: 28px;
+  }
+  .edit_note {
+    font-size: 26px;
+    line-height: 26px;
+  }
+
+  .remove_icon {
+    font-size: 17px;
+    line-height: 23px;
   }
 
   .note_todos_container {
     clear: both;
+    overflow: hidden;
     padding-left: $gap_with_icon;
     -webkit-transition: $transition_for_note_clickable_zone;
     -moz-transition:    $transition_for_note_clickable_zone;

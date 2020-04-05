@@ -11,13 +11,16 @@ const routes = [
     path: '/',
     name: 'main',
     component: main
-  },
-  {
+  }, {
     path: '/note/:id',
-    name: 'note',
+    name: 'open_note',
+    component: note
+  }, {
+    path: '/note',
+    name: 'create_note',
     component: note
   }
-]
+];
 
 const router = new VueRouter({
   mode: 'history',
